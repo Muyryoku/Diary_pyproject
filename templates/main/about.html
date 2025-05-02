@@ -1,19 +1,39 @@
 {% extends "main/base.html" %}
 
-{% block title %}Обо мне{% endblock %}
+{% block title %}О проекте{% endblock %}
 
 {% block content %}
-<h1 class="text-4xl font-bold mb-6 text-purple-400">📘 Обо мне</h1>
+<div class="max-w-3xl mx-auto px-4 py-8 text-gray-200 space-y-6">
 
-<p class="text-center text-sm text-gray-400 mb-4">
-  <a href="{% url 'home' %}" class="text-purple-400 hover:underline">Главная</a>
-</p>
+  <h1 class="text-4xl font-bold text-purple-400 mb-4 flex items-center gap-2">
+    <span class="text-blue-400 text-3xl">🟦</span> Обо мне
+  </h1>
 
-<p class="text-gray-300 max-w-xl">
-  Привет! Я <strong>Разработчик Diary</strong>, и я создал этот проект, чтобы помочь людям лучше организовывать свои задачи, следить за прогрессом и достигать целей.
-  <br><br>
-  Diary — это результат моего стремления объединить простоту, функциональность и удобство в одном месте. Я верю, что цифровые инструменты должны работать на тебя, а не наоборот.
-  <br><br>
-  Спасибо, что используешь Diary! Надеюсь, он станет полезной частью твоего продуктивного дня.
-</p>
+  <p class="text-lg leading-relaxed">
+    Привет! Я <strong class="text-purple-300">Разработчик Diary</strong>, и я создал этот проект, чтобы помочь людям
+    лучше организовывать свои задачи, следить за прогрессом и достигать целей.
+  </p>
+
+  <p class="text-lg leading-relaxed">
+    <span class="text-purple-400 font-semibold">Diary</span> — это результат моего стремления объединить простоту,
+    функциональность и удобство в одном месте. Я верю, что цифровые инструменты должны работать на тебя, а не наоборот.
+  </p>
+
+  <p class="text-lg leading-relaxed">
+    Спасибо, что используешь Diary! Надеюсь, он станет полезной частью твоего продуктивного дня.
+  </p>
+
+  <div class="mt-10 bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-purple-500">
+    <h2 class="text-xl font-semibold text-purple-300 mb-2">🔔 Пожелание от разработчика</h2>
+    <p class="text-gray-300">
+      Не бойся ошибок — бойся бездействия. Даже один шаг в день — это уже движение вперёд.
+    </p>
+    <div class="mt-4">
+      <a href="{% url 'home' %}" class="inline-block bg-purple-600 hover:bg-purple-500 text-white px-5 py-2 rounded-full text-sm">
+        ⬅ Вернуться на главную
+      </a>
+    </div>
+  </div>
+
+</div>
 {% endblock %}

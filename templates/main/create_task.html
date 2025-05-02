@@ -1,16 +1,19 @@
-{% extends 'base.html' %}
-
-{% block title %}Создание задачи{% endblock %}
+{% extends "main/base.html" %}
 
 {% block content %}
-<h1>Создать новую задачу</h1>
+<div class="max-w-2xl mx-auto p-6">
 
-<form method="POST">
-  {% csrf_token %}
-  <label for="title">Название задачи:</label>
-  <input type="text" id="title" name="title" required><br><br>
+  <h1 class="text-3xl font-bold mb-6 text-purple-500">📌 Новая задача</h1>
 
-  <button type="submit">Создать</button>
-</form>
+  <form method="post" class="bg-gray-800 p-6 rounded space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="bg-purple-600 w-full py-2 rounded hover:bg-purple-500">Сохранить задачу</button>
+  </form>
 
+  <p class="mt-4 text-center">
+    <a href="{% url 'home' %}" class="text-purple-400 hover:underline">← Назад к главной</a>
+  </p>
+
+</div>
 {% endblock %}

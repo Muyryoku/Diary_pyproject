@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Note(models.Model):
+    objects = None
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     content = models.TextField()
@@ -11,6 +12,7 @@ class Note(models.Model):
         return self.title
 
 class Task(models.Model):
+    objects = None
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     completed = models.BooleanField(default=False)

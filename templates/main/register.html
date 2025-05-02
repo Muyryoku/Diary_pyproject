@@ -1,21 +1,44 @@
 {% extends "main/base.html" %}
-
+{% load widget_tweaks %}
 {% block title %}Регистрация{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold mb-6 text-purple-400">📝 Регистрация</h1>
+<div class="max-w-md mx-auto bg-gray-800 p-8 rounded-lg shadow-lg mt-10">
 
-<p class="text-center text-sm text-gray-400 mb-4">
-  <a href="{% url 'home' %}" class="text-purple-400 hover:underline">Главная</a>
-</p>
+  <h1 class="text-3xl text-purple-400 font-bold mb-6 text-center flex items-center justify-center gap-2">
+    📝 Регистрация
+  </h1>
 
-<form method="post" class="bg-gray-800 p-6 rounded-lg shadow-md max-w-md mx-auto space-y-4">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="bg-purple-600 w-full py-2 rounded hover:bg-purple-500">Создать аккаунт</button>
-</form>
+  <form method="post" novalidate class="space-y-4">
+    {% csrf_token %}
+    {% for field in form %}
+      <div>
+        <label {% if field.id_for_label %}for="{{ field.id_for_label }}"{% endif %} class="block text-sm text-purple-200 mb-1">
+          {{ field.label }}
+        </label>
+        {{ field|add_class:"bg-white text-black rounded w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400" }}
 
-<p class="mt-4 text-center text-sm text-gray-400">
-  Уже есть аккаунт? <a href="{% url 'login' %}" class="text-purple-400 hover:underline">Войти</a>
-</p>
+        {% if field.errors %}
+          <p class="text-sm text-red-400 mt-1">{{ field.errors.0 }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    {% if form.non_field_errors %}
+      <div class="text-red-400 text-sm">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-2 px-4 rounded-md font-medium">
+      ➕ Создать аккаунт
+    </button>
+  </form>
+
+  <p class="mt-6 text-center text-gray-400 text-sm">
+    Уже есть аккаунт?
+    <a href="{% url 'login' %}" class="text-purple-400 hover:underline">Войти</a>
+  </p>
+
+</div>
 {% endblock %}

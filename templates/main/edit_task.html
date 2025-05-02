@@ -1,0 +1,12 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-6 text-purple-500">✏️ Редактировать задачу</h1>
+  <form method="post" class="bg-gray-800 p-6 rounded space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="bg-purple-600 w-full py-2 rounded hover:bg-purple-500">Сохранить изменения</button>
+  </form>
+</div>
+{% endblock %}

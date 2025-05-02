@@ -1,16 +1,28 @@
-from django.shortcuts import render, redirect, get_object_or_404
+import datetime
+import requests
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import Task, Note
-from .forms import TaskForm, NoteForm
+from .forms import TaskForm
+from .models import Note
+from .models import Task
 from .serializers import NoteSerializer, UserSerializer, ProfileSerializer
-from django.conf import settings
-import datetime
-import requests
+from django.contrib.auth.decorators import login_required
+from .models import Task
+
+@login_required
+def tasks_view(request):
+    tasks = Task.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'main/tasks.html', {
+        'tasks': tasks
+    })
+
+
 
 @login_required
 def home_view(request):
@@ -22,14 +34,6 @@ def home_view(request):
     temperature, weather_description = get_weather()
     weather_info = f"{temperature}°C, {weather_description}" if temperature else f"Ошибка: {weather_description}"
 
-    if request.method == 'POST':
-        if 'mark_completed' in request.POST:
-            task_id = request.POST.get('task_id')
-            task = get_object_or_404(Task, id=task_id, user=request.user)
-            task.is_completed = not task.is_completed
-            task.save()
-            return redirect('home')
-
     user_notes = Note.objects.filter(user=request.user)
     form = TaskForm()
 
@@ -37,7 +41,7 @@ def home_view(request):
         'now': datetime.datetime.now(),
         'completed_tasks': completed_tasks,
         'total_tasks': total_tasks,
-        'progress': progress,
+        'progress_percent': progress,
         'weather_info': weather_info,
         'form': form,
         'tasks': tasks,
@@ -45,19 +49,30 @@ def home_view(request):
     }
     return render(request, 'main/home.html', context)
 
-# === Создание заметки ===
-@login_required
+
+from django.shortcuts import render, redirect
+from .forms import NoteForm
+
 def create_note_view(request):
+    next_param = request.GET.get('next', '')  # ⬅ переместили сюда
+
     if request.method == 'POST':
         form = NoteForm(request.POST)
         if form.is_valid():
             note = form.save(commit=False)
             note.user = request.user
             note.save()
+            next_url = request.POST.get('next')
+            if next_url:
+                return redirect(next_url)
             return redirect('home')
     else:
         form = NoteForm()
-    return render(request, 'main/create_note.html', {'form': form})
+
+    return render(request, 'main/create_note.html', {
+        'form': form,
+        'next': next_param,
+    })
 
 # === Создание задачи ===
 @login_required
@@ -73,26 +88,39 @@ def create_task_view(request):
         form = TaskForm()
     return render(request, 'main/create_task.html', {'form': form})
 
-# === Отдельная страница заметок ===
 @login_required
 def notes_view(request):
-    notes = Note.objects.filter(user=request.user)
-    return render(request, 'main/notes.html', {'notes': notes})
+    user_notes = Note.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'main/notes.html', {
+        'user_notes': user_notes
+    })
 
 # === Страница "О проекте" ===
 def about_view(request):
     return render(request, 'main/about.html')
 
-# === Регистрация через форму ===
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib.auth import login
+from .forms import RegisterForm
+
 def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')  # 🔁 уже вошел — возвращаем
+
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = RegisterForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('login')
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
+            login(request, user)  # 🔐 автоматический вход
+            return redirect('home')
     else:
-        form = UserCreationForm()
+        form = RegisterForm()
+
     return render(request, 'main/register.html', {'form': form})
+
 
 # === Профиль пользователя ===
 @login_required
@@ -103,7 +131,7 @@ def profile_view(request):
 def get_weather():
     api_key = settings.OPENWEATHER_API_KEY
     city = 'Almaty'
-    url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric&lang=ru"
+    url = f"https://api.openweathermap.org/data/2.5/weather?q=almaty&appid=4888ee202e791818ba39b78993ad14af&units=metric&lang=ru"
     try:
         response = requests.get(url)
         data = response.json()
@@ -137,5 +165,51 @@ class NoteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-def update_task_status():
-    return None
+@login_required
+def update_task_status(request, task_id):
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    task.completed = not task.completed
+    task.save()
+    return redirect('home')
+
+@login_required
+def edit_task_view(request, task_id):
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = TaskForm(instance=task)
+    return render(request, 'main/edit_task.html', {'form': form})
+
+
+@login_required
+def delete_task_view(request, task_id):
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    if request.method == 'POST':
+        task.delete()
+        return redirect('home')
+    return render(request, 'main/delete_task.html', {'task': task})
+
+@login_required
+def edit_note_view(request, note_id):
+    note = get_object_or_404(Note, id=note_id, user=request.user)
+    if request.method == 'POST':
+        form = NoteForm(request.POST, instance=note)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = NoteForm(instance=note)
+    return render(request, 'main/edit_note.html', {'form': form})
+
+
+@login_required
+def delete_note_view(request, note_id):
+    note = get_object_or_404(Note, id=note_id, user=request.user)
+    if request.method == 'POST':
+        note.delete()
+        return redirect('home')
+    return render(request, 'main/delete_note.html', {'note': note})

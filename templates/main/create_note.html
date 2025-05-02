@@ -1,19 +1,28 @@
-{% extends 'base.html' %}
-
-{% block title %}Создание заметки{% endblock %}
+{% extends "main/base.html" %}
 
 {% block content %}
-<h1>Создать новую заметку</h1>
+<div class="max-w-2xl mx-auto p-6">
 
-<form method="POST">
+  <h1 class="text-3xl font-bold mb-6 text-purple-500">📝 Новая заметка</h1>
+
+  <form method="post" class="bg-gray-800 p-6 rounded space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="bg-purple-600 w-full py-2 rounded hover:bg-purple-500">Сохранить заметку</button>
+  </form>
+
+  <p class="mt-4 text-center">
+    <a href="{% url 'home' %}" class="text-purple-400 hover:underline">← Назад к главной</a>
+  </p>
+
+</div>
+<form method="post">
   {% csrf_token %}
-  <label for="title">Заголовок:</label>
-  <input type="text" id="title" name="title" required><br><br>
+  {{ form.as_p }}
+  <input type="hidden" name="next" value="{{ request.GET.next }}">
+  <button type="submit">Сохранить</button>
+  <input type="hidden" name="next" value="{{ next }}">
 
-  <label for="content">Содержание:</label>
-  <textarea id="content" name="content" required></textarea><br><br>
-
-  <button type="submit">Создать</button>
 </form>
 
 {% endblock %}

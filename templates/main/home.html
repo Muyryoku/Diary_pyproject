@@ -3,9 +3,15 @@
 {% block title %}Главная{% endblock %}
 
 {% block content %}
-<div class="text-sm text-gray-400 mb-2">
-  📅 Сегодня: {{ now|date:"d.m.Y" }} | 🕒 Время: {{ now|time:"H:i" }}
+<div class="flex items-center justify-between text-sm text-gray-400 mb-4">
+  <div>
+    📅 Сегодня: {{ now|date:"d.m.Y" }} | 🕒 Время: {{ now|time:"H:i" }}
+  </div>
+  <div class="flex items-center gap-2">
+    🌤 Погода: {{ weather_info }}
+  </div>
 </div>
+
 
 <h1 class="text-4xl font-bold mb-6 text-purple-400 animate-fade-in">📌 Добро пожаловать в Diary</h1>
 
@@ -17,19 +23,21 @@
         <span class="text-purple-400 font-semibold">Diary</span> — твой путь к продуктивности!
       </p>
 
-      <div class="bg-gray-700 rounded-md px-6 py-4 text-white text-md shadow-inner border-l-4 border-purple-500">
-        🎯 <strong>Цель дня:</strong> Завершить хотя бы 3 задачи!
-      </div>
+      {% if completed_tasks >= 3 %}
+        <div class="bg-green-700 rounded-md px-6 py-4 text-white text-md shadow-inner border-l-4 border-green-400">
+          ✅ <strong>Цель дня выполнена!</strong>
+        </div>
+      {% else %}
+        <div class="bg-gray-700 rounded-md px-6 py-4 text-white text-md shadow-inner border-l-4 border-purple-500">
+          🎯 <strong>Цель дня:</strong> Завершить хотя бы 3 задачи!
+        </div>
+      {% endif %}
 
       <div class="bg-gray-700 rounded-md px-6 py-4 text-white flex justify-between items-center">
         <span>📌 Прогресс: <strong>{{ completed_tasks }}</strong> из <strong>{{ total_tasks }}</strong> задач выполнено</span>
         <div class="w-1/2 bg-gray-600 h-2 rounded overflow-hidden">
           <div class="bg-purple-500 h-full" style="width: {{ progress_percent }}%;"></div>
         </div>
-      </div>
-
-      <div class="bg-gray-700 rounded-md px-6 py-4 text-white text-sm flex items-center justify-between">
-        <span>🌤 Погода сегодня: {{ weather_info }}</span>
       </div>
 
       <div class="mt-8">
@@ -39,6 +47,10 @@
             <h3 class="text-xl text-white">{{ note.title }}</h3>
             <p class="text-gray-300">{{ note.content }}</p>
             <p class="text-sm text-gray-500 mt-2">Создано: {{ note.created_at|date:"d.m.Y H:i" }}</p>
+            <div class="mt-2 text-sm space-x-4">
+              <a href="{% url 'edit_note' note.id %}" class="text-blue-400 hover:underline">Редактировать</a>
+              <a href="{% url 'delete_note' note.id %}" class="text-red-400 hover:underline">Удалить</a>
+            </div>
           </div>
         {% empty %}
           <p class="text-gray-400">У вас нет заметок. Создайте первую заметку!</p>
@@ -47,83 +59,30 @@
 
       <h2 class="text-2xl text-purple-400 mt-8 mb-4">Задачи</h2>
       {% for task in tasks %}
-        <div class="task" id="task_{{ task.id }}">
+        <div class="bg-gray-700 p-4 rounded-md mb-4">
           <h3 class="text-xl text-white">{{ task.title }}</h3>
-          <p class="text-gray-300">{{ task.content }}</p>
-          <p class="text-sm text-gray-500 mt-2">Создано: {{ task.created_at|date:"d.m.Y H:i" }}</p>
-          <p>
+          <p class="text-sm text-gray-500">Создано: {{ task.created_at|date:"d.m.Y H:i" }}</p>
+          <div class="flex flex-wrap items-center gap-4 mt-2">
             <form method="POST" action="{% url 'update_task_status' task.id %}">
               {% csrf_token %}
               <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white py-2 px-4 rounded-md">
-                {% if task.is_completed %}
-                  Задача выполнена
-                {% else %}
-                  Отметить как выполненную
-                {% endif %}
+                {% if task.completed %}✔ Завершено{% else %}Отметить как выполненную{% endif %}
               </button>
             </form>
-          </p>
+            <a href="{% url 'edit_task' task.id %}" class="text-blue-400 hover:underline">Редактировать</a>
+            <a href="{% url 'delete_task' task.id %}" class="text-red-400 hover:underline">Удалить</a>
+          </div>
         </div>
       {% endfor %}
     </div>
   </div>
 
   <div class="w-1/3 bg-gray-700 p-6 rounded-md shadow-lg">
-    <h2 class="text-2xl text-purple-400 mb-4">📝 Создать заметку или задачу</h2>
+    <h2 class="text-2xl text-purple-400 mb-4">📝 Создать</h2>
     <div class="mb-4">
-      <button onclick="toggleForm('note')" class="bg-purple-600 hover:bg-purple-500 text-white py-2 px-4 rounded-md w-full mb-2">Создать заметку</button>
-      <button onclick="toggleForm('task')" class="bg-purple-600 hover:bg-purple-500 text-white py-2 px-4 rounded-md w-full">Создать задачу</button>
+      <a href="{% url 'create_note' %}" class="bg-purple-600 hover:bg-purple-500 text-white py-2 px-4 rounded-md w-full block mb-2 text-center">Создать заметку</a>
+      <a href="{% url 'create_task' %}" class="bg-purple-600 hover:bg-purple-500 text-white py-2 px-4 rounded-md w-full block text-center">Создать задачу</a>
     </div>
-
-    <!-- Форма для создания заметки -->
-    <div id="create-note-form" class="create-form" style="display: none;">
-      <form method="POST">
-        {% csrf_token %}
-        <div class="mb-4">
-          <label for="title" class="block text-sm text-gray-300">Заголовок заметки</label>
-          <input type="text" name="title" id="title" class="w-full p-2 mt-1 text-sm border-gray-300 rounded-md" required>
-        </div>
-        <div class="mb-4">
-          <label for="content" class="block text-sm text-gray-300">Описание заметки</label>
-          <textarea name="content" id="content" rows="4" class="w-full p-2 mt-1 text-sm border-gray-300 rounded-md" required></textarea>
-        </div>
-        <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white py-2 px-4 rounded-md w-full">Создать заметку</button>
-      </form>
-    </div>
-
-    <!-- Форма для создания задачи -->
-    <div id="create-task-form" class="create-form" style="display: none;">
-      <form method="POST">
-        {% csrf_token %}
-        <div class="mb-4">
-          <label for="task-title" class="block text-sm text-gray-300">Заголовок задачи</label>
-          <input type="text" name="title" id="task-title" class="w-full p-2 mt-1 text-sm border-gray-300 rounded-md" required>
-        </div>
-        <div class="mb-4">
-          <label for="task-content" class="block text-sm text-gray-300">Описание задачи</label>
-          <textarea name="content" id="task-content" rows="4" class="w-full p-2 mt-1 text-sm border-gray-300 rounded-md" required></textarea>
-        </div>
-        <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white py-2 px-4 rounded-md w-full">Добавить задачу</button>
-      </form>
-    </div>
-
   </div>
-
 </div>
-
-<script>
-    function toggleForm(formType) {
-        const noteForm = document.getElementById('create-note-form');
-        const taskForm = document.getElementById('create-task-form');
-
-        if (formType === 'note') {
-            noteForm.style.display = 'block';
-            taskForm.style.display = 'none';
-        } else {
-            taskForm.style.display = 'block';
-            noteForm.style.display = 'none';
-        }
-    }
-</script>
-
 {% endblock %}
