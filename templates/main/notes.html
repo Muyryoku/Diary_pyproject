@@ -1,0 +1,27 @@
+{% extends "main/base.html" %}
+
+{% block title %}Заметки{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6 text-purple-400">📝 Мои заметки</h1>
+
+<p class="text-center text-sm text-gray-400 mb-4">
+  <a href="{% url 'home' %}" class="text-purple-400 hover:underline">Главная</a>
+</p>
+
+<div class="bg-gray-800 p-6 rounded-lg shadow-md max-w-2xl mx-auto">
+  <h2 class="text-xl font-semibold text-gray-300 mb-4">Ваши заметки:</h2>
+  {% if notes %}
+    <ul class="list-disc pl-5">
+      {% for note in notes %}
+        <li class="text-gray-300">
+          <strong>{{ note.title }}</strong>: {{ note.content }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-gray-400">У вас нет заметок.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

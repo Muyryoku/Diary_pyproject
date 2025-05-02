@@ -1,11 +1,12 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Note
+from django.contrib.auth import authenticate
 
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
-        fields = '__all__'
+        fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'done', 'priority', 'deadline', 'tags']
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -20,7 +21,6 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
-from django.contrib.auth import authenticate
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -29,7 +29,7 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, data):
         user = authenticate(username=data['username'], password=data['password'])
         if user:
-            return user
+            return {"user": user}
         raise serializers.ValidationError("Неверные логин или пароль")
 
 class ProfileSerializer(serializers.ModelSerializer):

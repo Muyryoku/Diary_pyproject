@@ -1,0 +1,21 @@
+{% extends "main/base.html" %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6 text-purple-400">🔐 Вход в Diary</h1>
+
+<p class="text-center text-sm text-gray-400 mb-4">
+  <a href="{% url 'home' %}" class="text-purple-400 hover:underline">Главная</a>
+</p>
+
+<form method="post" class="bg-gray-800 p-6 rounded-lg shadow-md max-w-md mx-auto space-y-4">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="bg-purple-600 w-full py-2 rounded hover:bg-purple-500">Войти</button>
+</form>
+
+<p class="mt-4 text-center text-sm text-gray-400">
+  Нет аккаунта? <a href="{% url 'register' %}" class="text-purple-400 hover:underline">Зарегистрироваться</a>
+</p>
+{% endblock %}
